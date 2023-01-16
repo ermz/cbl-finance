@@ -3,10 +3,10 @@ pragma solidity ^0.8.9;
 
 import "./LendingHelpers.sol";
 
-// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract Cabal {
-    // AggregatorV3Interface internal priceFeed;
+    AggregatorV3Interface internal priceFeed;
 
     address public CABAL_OWNER;
     uint256 public bondId;
@@ -36,8 +36,8 @@ contract Cabal {
         address[] allowedTokens;
     }
 
-    constructor(/* address aggregatorAddress */) {
-        // priceFeed = AggregatorV3Interface(aggregatorAddress);
+    constructor(address aggregatorAddress) {
+        priceFeed = AggregatorV3Interface(aggregatorAddress);
         CABAL_OWNER = msg.sender;
     }
 
@@ -60,21 +60,21 @@ contract Cabal {
         uint256 usableCollateral = LendingHelpers.usableCollateralAmount(msg.value);
 
         // amountPerBond needs to change depending on usable collateral
-        // uint256 amountPerBond = usableCollateral / amount;
+        uint256 amountPerBond = usableCollateral / amount;
 
         // Two things
         // 1. Use historial price feeds to return a certain number
         // 2. Set percent based on historical price and maturity
         // uint256 percentageAvailable = 
 
-        // bonds[bondId] = BondInfo(
-        //     msg.sender,
-        //     maturity,
-        //     msg.value,
-        //     amountPerBond,
-        //     amount,
-        //     allowedTokens
-        // );
+        bonds[bondId] = BondInfo(
+            msg.sender,
+            maturity,
+            msg.value,
+            amountPerBond,
+            amount,
+            allowedTokens
+        );
 
         maturityDate[msg.sender] = block.timestamp + maturity;
 
@@ -84,29 +84,27 @@ contract Cabal {
         // Transfer CBL Token to  msg.sender
     }
 
+    function getHistoricalPrice(uint80 roundId) public view returns (int256) {
+        (
+            uint80 id,
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = priceFeed.getRoundData(roundId);
+        require(timeStamp > 0, "Round not complete");
+        return price;
+    }
 
-
-    // function getHistoricalPrice(uint80 roundId) public view returns (int256) {
-    //     (
-    //         uint80 id,
-    //         int price,
-    //         uint startedAt,
-    //         uint timeStamp,
-    //         uint80 answeredInRound
-    //     ) = priceFeed.getRoundData(roundId);
-    //     require(timeStamp > 0, "Round not complete");
-    //     return price;
-    // }
-
-    // function getLatestPrice() public view returns (int) {
-    //     (
-    //         ,
-    //         int price,
-    //         ,
-    //         ,
-    //     ) = priceFeed.latestRoundData();
-    //     return price;
-    // }
+    function getLatestPrice() public view returns (int) {
+        (
+            ,
+            int price,
+            ,
+            ,
+        ) = priceFeed.latestRoundData();
+        return price;
+    }
 
     // function acceptBond(uint256 _bondId, uint amount) external {
     //     require(amount <= bondsAvailable[_bondId], "Trying to purchase too many bonds")
