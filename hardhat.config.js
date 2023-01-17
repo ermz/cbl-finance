@@ -1,4 +1,7 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("hardhat-deploy");
+require("@nomiclabs/hardhat-ethers");
+require("hardhat-deploy-ethers");
 require("dotenv").config();
 
 const GOERLI_RPC_URL = process.env.GOERLI_RPC_URL || "https://eth-goerli.g.alchemy.com/v2/c8LuNzJlVdS8ffj1-e4TRyHRlUEEk13H";
